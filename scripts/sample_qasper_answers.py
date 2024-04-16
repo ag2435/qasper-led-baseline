@@ -4,12 +4,13 @@ import os
 import json
 from tqdm import tqdm
 import torch
-from allennlp.models.archival import load_archive
-from transformers import AutoTokenizer
+# from allennlp.models.archival import load_archive
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from datasets import load_dataset
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from qasper_baselines import model, dataset_reader
+from qasper_baselines import dataset_reader
 
 
 def main():
@@ -21,18 +22,21 @@ def main():
     parser.add_argument('--cpu', action='store_true')
     args = parser.parse_args()
 
-    archive = load_archive(args.model)
-    qasper_led = archive.model.transformer
+    # archive = load_archive(args.model)
+    # qasper_led = archive.model.transformer
+    qasper_led = AutoModelForSeq2SeqLM.from_pretrained("allenai/led-base-16384")
     if not args.cpu:
         qasper_led.cuda()
     tokenizer = AutoTokenizer.from_pretrained('allenai/led-base-16384')
     reader = dataset_reader.QasperReader(for_training=False)
-    dataset = json.load(open(args.data))
+    dataset = load_dataset("allenai/qasper")
+
+    # dataset = json.load(open(args.data))
     outfile = open(args.output, "w")
     for article_id, article in tqdm(dataset.items()):
         article["article_id"] = article_id
         for instance in reader._article_to_instances(article):
-            question_id = instance.fields['metadata'].metadata['question_id']
+            question_id = instance['metadata']['question_id']
             try:
                 tokens = instance['question_with_context'].human_readable_repr()
                 global_attention_mask = torch.tensor([list(instance['global_attention_mask'].array)])
