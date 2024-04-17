@@ -12,6 +12,14 @@ This is an implementation of the baselines reported in the paper **A Dataset of 
 pip install -r requirements.txt
 ```
 
+TODO: migrate this to conda
+
+To run other baselines:
+```
+cd ~/arXiv-agent
+conda develop .
+```
+
 ## Experiments
 
 ### With evidence selection scaffold
