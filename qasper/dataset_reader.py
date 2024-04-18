@@ -203,7 +203,7 @@ class QasperReader(object):
 
             additional_metadata = {
                 "question_id": question_answer["question_id"],
-                "article_id": article.get("article_id"),
+                "article_id": article.get("id"),
                 "all_answers": all_answers,
                 "all_evidence": all_evidence,
                 "all_evidence_masks": all_evidence_masks,
@@ -299,7 +299,9 @@ class QasperReader(object):
         question_field = question_and_context
         fields["question_with_context"] = question_field
 
-        s_question_and_context = ' '.join([question,] + paragraphs)
+        # Albert: add string version of the question and context
+        # this is used as input to models that handle tokenization internally
+        s_question_and_context = '\n'.join([question,] + paragraphs)
         fields['s_question_with_context'] = s_question_and_context
 
         start_of_context = (

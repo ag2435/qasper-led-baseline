@@ -1,26 +1,27 @@
-# Longformer Encoder Decoder Baselines for Qasper
+# QASPER benchmark
 
-This is an implementation of the baselines reported in the paper **A Dataset of Information-Seeking Questions and Answers Anchored in Research Papers** by Dasigi et al., published at NAACL 2021.
+Baselines tested in [qasper.ipynb](qasper.ipynb).
 
-## Prerequisites
+Differences of our implementation over the original implementation:
+1. We use the dataset provided at https://huggingface.co/datasets/allenai/qasper since it doesn't require manually downloading files.
+2. We remove usage of `allennlp` since the Python package cannot be installed anymore.
+3. We add baselines to [qasper/models](qasper/models/). Currently, we have
+    - QASPER (Longformer Encoder Decoder)
+    - GPT-3.5-Turbo
+    - TODO: RAG (with R=TF-IDF or Contriever) implemented in LangChain?
+4. We replace `allennlp` special tokens with the special tokens of the HF transformer tokenizer:
+    - paragraph separator: '</s>' -> tokenizer.sep_token
+    - sequence pair start tokens: _tokenizer.sequence_pair_start_tokens -> tokenizer.bos_token
 
- - Download data from [here](https://allenai.org/data/qasper).
-
- - Install requirements as follows:
+## Setup
 
 ```
-pip install -r requirements.txt
-```
-
-TODO: migrate this to conda
-
-To run other baselines:
-```
-cd ~/arXiv-agent
+# in a conda environment with torch, transformers, and datasets installed
+# install the qasper library
 conda develop .
 ```
 
-## Experiments
+## Experiments (from original repo)
 
 ### With evidence selection scaffold
 
