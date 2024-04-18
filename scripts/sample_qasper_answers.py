@@ -14,6 +14,10 @@
 #     name: python3
 # ---
 
+"""
+This file is replaced by the notebook qasper.ipynb
+"""
+
 # %%
 import argparse
 import sys

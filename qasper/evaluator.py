@@ -8,6 +8,7 @@ import string
 import re
 import json
 
+from .utils import transpose_dict
 
 def normalize_answer(s):
     """
@@ -60,13 +61,14 @@ def paragraph_f1_score(prediction, ground_truth):
     return f1
 
 
-def get_answers_and_evidence(data, text_evidence_only):
+def get_answers_and_evidence(articles, text_evidence_only=True):
     answers_and_evidence = {}
-    for paper_data in data.values():
-        for qa_info in paper_data["qas"]:
+    for article in articles:
+        # print(article)
+        for qa_info in transpose_dict(article["qas"]):
             question_id = qa_info["question_id"]
             references = []
-            for annotation_info in qa_info["answers"]:
+            for annotation_info in transpose_dict(qa_info["answers"]):
                 answer_info = annotation_info["answer"]
                 if answer_info["unanswerable"]:
                     references.append({"answer": "Unanswerable", "evidence": [], "type": "none"})
@@ -97,7 +99,7 @@ def get_answers_and_evidence(data, text_evidence_only):
 
 def evaluate(gold, predicted):
     max_answer_f1s = []
-    max_evidence_f1s = []
+    # max_evidence_f1s = []
     max_answer_f1s_by_type = {
         "extractive": [],
         "abstractive": [],
@@ -109,8 +111,9 @@ def evaluate(gold, predicted):
         if question_id not in predicted:
             num_missing_predictions += 1
             max_answer_f1s.append(0.0)
-            max_evidence_f1s.append(0.0)
+            # max_evidence_f1s.append(0.0)
             continue
+
         answer_f1s_and_types = [
             (token_f1_score(predicted[question_id]["answer"], reference["answer"]),
              reference["type"])
@@ -119,17 +122,17 @@ def evaluate(gold, predicted):
         max_answer_f1, answer_type = sorted(answer_f1s_and_types, key=lambda x: x[0], reverse=True)[0]
         max_answer_f1s.append(max_answer_f1)
         max_answer_f1s_by_type[answer_type].append(max_answer_f1)
-        evidence_f1s = [
-            paragraph_f1_score(predicted[question_id]["evidence"], reference["evidence"])
-            for reference in gold[question_id]
-        ]
-        max_evidence_f1s.append(max(evidence_f1s))
+        # evidence_f1s = [
+        #     paragraph_f1_score(predicted[question_id]["evidence"], reference["evidence"])
+        #     for reference in gold[question_id]
+        # ]
+        # max_evidence_f1s.append(max(evidence_f1s))
 
     mean = lambda x: sum(x) / len(x) if x else 0.0
     return {
         "Answer F1": mean(max_answer_f1s),
         "Answer F1 by type": {key: mean(value) for key, value in max_answer_f1s_by_type.items()},
-        "Evidence F1": mean(max_evidence_f1s),
+        # "Evidence F1": mean(max_evidence_f1s),
         "Missing predictions": num_missing_predictions
     }
 

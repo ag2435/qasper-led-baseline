@@ -131,3 +131,4 @@ dmypy.json
 *.DS_Store
 *output/
 .vscode/
+*data/

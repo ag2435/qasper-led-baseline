@@ -1,3 +1,10 @@
+"""
+Albert: I don't think we need this file since we're using the Hugging Face Transformers
+version of the model.
+
+See predict() method in qasper/models/qasper.py instead.
+"""
+
 import json
 from overrides import overrides
 

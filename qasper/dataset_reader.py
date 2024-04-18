@@ -24,7 +24,7 @@ import torch
 # from allennlp.data.token_indexers import PretrainedTransformerIndexer
 # from allennlp.data.tokenizers import Token, PretrainedTransformerTokenizer
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-
+from .utils import transpose_dict
 
 logger = logging.getLogger(__name__)
 
@@ -34,13 +34,6 @@ class AnswerType(Enum):
     ABSTRACTIVE = 2
     BOOLEAN = 3
     NONE = 4
-
-def transpose_dict(d):
-    arr = []
-    keys = d.keys()
-    for question_answer in zip(*[d[key] for key in keys]):
-        arr.append(dict(zip(keys, question_answer)))
-    return arr
 
 # @DatasetReader.register("qasper")
 class QasperReader(object):
