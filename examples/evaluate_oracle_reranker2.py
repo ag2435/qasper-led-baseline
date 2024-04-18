@@ -50,6 +50,9 @@ def main():
     f1_list = []
     for paper_info in data.values():
         for qa_info in paper_info["qas"]:
+            # print(qa_info.keys())
+            print(qa_info['search_query'])
+
             refs = get_references(qa_info["answers"])
             answers[qa_info["question_id"]] = refs
             questions[qa_info["question_id"]] = qa_info["question"]
