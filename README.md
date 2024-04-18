@@ -21,6 +21,8 @@ Differences of our implementation over the original implementation:
 conda develop .
 ```
 
+Data: [original data](https://allenai.org/data/qasper)
+
 ## Experiments (from original repo)
 
 ### With evidence selection scaffold

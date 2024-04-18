@@ -92,7 +92,7 @@ class QasperReader(object):
         transformer_model_name: str = "allenai/led-base-16384",
         max_query_length: int = 128,
         max_document_length: int = 16384,
-        paragraph_separator: Optional[str] = "</s>",
+        # paragraph_separator: Optional[str] = "</s>",
         include_global_attention_mask: bool = True,
         context: str = "full_text",
         for_training: bool = False,
@@ -130,44 +130,44 @@ class QasperReader(object):
         self._for_training = for_training
         self._stats = defaultdict(int)
 
-    # @overrides
-    def _read(self, file_path: str):
-        # if `file_path` is a URL, redirect to the cache
-        file_path = cached_path(file_path)
+    # # @overrides
+    # def _read(self, file_path: str):
+    #     # if `file_path` is a URL, redirect to the cache
+    #     file_path = cached_path(file_path)
 
-        logger.info("Reading the dataset")
-        if file_path.endswith(".json"):
-            yield from self._read_json(file_path)
-        elif file_path.endswith(".jsonl"):
-            yield from self._read_json_lines(file_path)
-        else:
-            raise RuntimeError(
-                f"Unsupported extension on file: {file_path}. Only json and jsonl are supported."
-            )
+    #     logger.info("Reading the dataset")
+    #     if file_path.endswith(".json"):
+    #         yield from self._read_json(file_path)
+    #     elif file_path.endswith(".jsonl"):
+    #         yield from self._read_json_lines(file_path)
+    #     else:
+    #         raise RuntimeError(
+    #             f"Unsupported extension on file: {file_path}. Only json and jsonl are supported."
+    #         )
 
-    def _read_json(self, file_path: str):
-        logger.info("Reading json file at %s", file_path)
-        with open_compressed(file_path) as dataset_file:
-            dataset = json.load(dataset_file)
-        for article_id, article in self.shard_iterable(dataset.items()):
-            if not article["full_text"]:
-                continue
-            article["article_id"] = article_id
-            yield from self._article_to_instances(article)
-        self._log_stats()
+    # def _read_json(self, file_path: str):
+    #     logger.info("Reading json file at %s", file_path)
+    #     with open_compressed(file_path) as dataset_file:
+    #         dataset = json.load(dataset_file)
+    #     for article_id, article in self.shard_iterable(dataset.items()):
+    #         if not article["full_text"]:
+    #             continue
+    #         article["article_id"] = article_id
+    #         yield from self._article_to_instances(article)
+    #     self._log_stats()
 
-    def _read_json_lines(self, file_path: str):
-        logger.info("Reading json lines file at %s", file_path)
-        with open_compressed(file_path) as dataset_file:
-            for data_line in self.shard_iterable(dataset_file):
-                data = json.loads(data_line)
-                yield from self._article_to_instances(data)
-        self._log_stats()
+    # def _read_json_lines(self, file_path: str):
+    #     logger.info("Reading json lines file at %s", file_path)
+    #     with open_compressed(file_path) as dataset_file:
+    #         for data_line in self.shard_iterable(dataset_file):
+    #             data = json.loads(data_line)
+    #             yield from self._article_to_instances(data)
+    #     self._log_stats()
 
-    def _log_stats(self) -> None:
-        logger.info("Stats:")
-        for key, value in self._stats.items():
-            logger.info("%s: %d", key, value)
+    # def _log_stats(self) -> None:
+    #     logger.info("Stats:")
+    #     for key, value in self._stats.items():
+    #         logger.info("%s: %d", key, value)
 
     def _article_to_instances(self, article: Dict[str, Any]) -> Iterable:
         paragraphs = self._get_paragraphs_from_article(article)

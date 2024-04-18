@@ -1,6 +1,7 @@
 import json
 import argparse
-from allennlp_models.rc.metrics import SquadEmAndF1
+import numpy as np
+from qasper.metrics.squad_em_and_f1 import SquadEmAndF1
 
 metric = SquadEmAndF1()
 f1_hash = {}
@@ -35,20 +36,47 @@ def get_references(answers_info):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", type=str)
-    parser.add_argument("--samples", type=str)
+    # parser.add_argument("--samples", type=str)
     parser.add_argument("--log", type=str)
     args = parser.parse_args()
 
     data = json.load(open(args.data))
     answers = {}
     questions = {}
+    samples_data = []
+    base_count = 0 # number of total questions
+    sample_count = 0 # number of questions with at least 3 references
+
     for paper_info in data.values():
         for qa_info in paper_info["qas"]:
-            answers[qa_info["question_id"]] = get_references(qa_info["answers"])
+            refs = get_references(qa_info["answers"])
+            answers[qa_info["question_id"]] = refs
             questions[qa_info["question_id"]] = qa_info["question"]
 
-    samples_data = [json.loads(line) for line in open(args.samples)]
-    print(f"Read {len(samples_data)} predictions")
+            # Albert: this didn't seem to be implemented in the original code
+            # According to QASPER paper (Sec. 4.1):
+            # we consider a subset of the test set containing questions with 
+            # at least three references (40% of the test set), evaluate each 
+            # reference against the remaining, and compute an average over all
+            #  such combinations
+            if len(refs) >= 3:
+                samples_data.append(
+                    {
+                        "question_id": qa_info["question_id"],
+                        "answers": refs,
+                        "normalized_answer_log_probs": [0.0] * len(refs)
+                    }
+                )
+                
+                sample_count += 1
+            
+            base_count += 1
+    print(f"Total questions: {base_count}")
+    print(f"Questions with at least 3 references: {sample_count}")
+    print(f"Percentage of questions with at least 3 references: {sample_count / base_count * 100}%")
+
+    # samples_data = [json.loads(line) for line in open(args.samples)]
+    # print(f"Read {len(samples_data)} predictions")
     oracle_f1_ranks = []
     oracle_f1s = []
     model_f1s = []
@@ -58,8 +86,10 @@ def main():
         predictions = prediction_info["answers"]
         scores = prediction_info["normalized_answer_log_probs"]
         sorted_predictions = [y[1] for y in sorted(zip(scores, predictions), key=lambda x: x[0], reverse=True)]
-        f1s = [max([get_f1(pred, reference) for reference in references]) for pred in sorted_predictions]
+        # print(sorted_predictions)
+        f1s = [np.mean([get_f1(pred, reference) for j, reference in enumerate(references) if i!=j]) for i, pred in enumerate(sorted_predictions)]
         oracle_f1 = max(f1s)
+        # print(oracle_f1)
         model_f1s.append(f1s[0])
         oracle_f1s.append(oracle_f1)
         for i, f1 in enumerate(f1s):
