@@ -13,7 +13,7 @@ from allennlp.training.metrics import Average
 
 from allennlp_models.rc.tools import squad
 
-from qasper_baselines.dataset_reader import AnswerType
+from qasper.dataset_reader import AnswerType
 
 
 @Model.register("qasper_baseline")

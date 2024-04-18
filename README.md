@@ -24,6 +24,8 @@ conda develop .
 
 ### With evidence selection scaffold
 
+**Albert: Is this implemented?**
+
 The configuration file to use is `training_config/led_base_with_evidence_scaffold.jsonnet`. Remember to set the data paths before training.
 
 ```

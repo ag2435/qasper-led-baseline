@@ -6,8 +6,8 @@ import numpy
 from numpy.testing import assert_almost_equal
 import torch
 
-import qasper_baselines.model  # pylint: disable=unused-import
-import qasper_baselines.dataset_reader  # pylint: disable=unused-import
+import qasper.model  # pylint: disable=unused-import
+import qasper.dataset_reader  # pylint: disable=unused-import
 
 
 class TestQasperBaseline(ModelTestCase):

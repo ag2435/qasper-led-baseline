@@ -5,24 +5,25 @@ from enum import Enum
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Iterable, Tuple
 
-from overrides import overrides
+# from overrides import overrides
 
-import spacy
+from spacy.tokens import Token
 import torch
 
-from allennlp.common.util import JsonDict
-from allennlp.data.fields import (
-    MetadataField,
-    TextField,
-    IndexField,
-    ListField,
-    TensorField,
-)
-from allennlp.common.file_utils import cached_path, open_compressed
-from allennlp.data.dataset_readers.dataset_reader import DatasetReader
-from allennlp.data.instance import Instance
-from allennlp.data.token_indexers import PretrainedTransformerIndexer
-from allennlp.data.tokenizers import Token, PretrainedTransformerTokenizer
+# from allennlp.common.util import JsonDict
+# from allennlp.data.fields import (
+#     MetadataField,
+#     TextField,
+#     IndexField,
+#     ListField,
+#     TensorField,
+# )
+# from allennlp.common.file_utils import cached_path, open_compressed
+# from allennlp.data.dataset_readers.dataset_reader import DatasetReader
+# from allennlp.data.instance import Instance
+# from allennlp.data.token_indexers import PretrainedTransformerIndexer
+# from allennlp.data.tokenizers import Token, PretrainedTransformerTokenizer
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 
 logger = logging.getLogger(__name__)
@@ -34,9 +35,15 @@ class AnswerType(Enum):
     BOOLEAN = 3
     NONE = 4
 
+def transpose_dict(d):
+    arr = []
+    keys = d.keys()
+    for question_answer in zip(*[d[key] for key in keys]):
+        arr.append(dict(zip(keys, question_answer)))
+    return arr
 
-@DatasetReader.register("qasper")
-class QasperReader(DatasetReader):
+# @DatasetReader.register("qasper")
+class QasperReader(object):
     """
     Reads a JSON-formatted Qasper data file and returns a `Dataset` where the `Instances` have
     four fields:
@@ -98,23 +105,26 @@ class QasperReader(DatasetReader):
         for_training: bool = False,
         **kwargs,
     ) -> None:
-        super().__init__(
-            manual_distributed_sharding=True,
-            manual_multiprocess_sharding=True,
-            **kwargs,
-        )
+        # super().__init__(
+        #     manual_distributed_sharding=True,
+        #     manual_multiprocess_sharding=True,
+        #     **kwargs,
+        # )
         self._transformer_model_name = transformer_model_name
-        self._tokenizer = PretrainedTransformerTokenizer(
-            transformer_model_name, add_special_tokens=False
-        )
+        # self._tokenizer = PretrainedTransformerTokenizer(
+        #     transformer_model_name, add_special_tokens=False
+        # )
+        # tokenizer has same name as model
+        self._tokenizer = AutoTokenizer.from_pretrained(transformer_model_name)
 
         self._include_global_attention_mask = include_global_attention_mask
-        self._token_indexers = {
-            "tokens": PretrainedTransformerIndexer(transformer_model_name)
-        }
+        # self._token_indexers = {
+        #     "tokens": PretrainedTransformerIndexer(transformer_model_name)
+        # }
         self.max_query_length = max_query_length
         self.max_document_length = max_document_length
-        self._paragraph_separator = paragraph_separator
+        self._paragraph_separator = self._tokenizer.sep_token
+        self._sequence_pair_start_tokens = [self._tokenizer.bos_token,]
         if context not in [
             "full_text",
             "question_only",
@@ -127,7 +137,7 @@ class QasperReader(DatasetReader):
         self._for_training = for_training
         self._stats = defaultdict(int)
 
-    @overrides
+    # @overrides
     def _read(self, file_path: str):
         # if `file_path` is a URL, redirect to the cache
         file_path = cached_path(file_path)
@@ -166,7 +176,7 @@ class QasperReader(DatasetReader):
         for key, value in self._stats.items():
             logger.info("%s: %d", key, value)
 
-    def _article_to_instances(self, article: Dict[str, Any]) -> Iterable[Instance]:
+    def _article_to_instances(self, article: Dict[str, Any]) -> Iterable:
         paragraphs = self._get_paragraphs_from_article(article)
         tokenized_context = None
         paragraph_start_indices = None
@@ -177,8 +187,9 @@ class QasperReader(DatasetReader):
             )
 
         self._stats["number of documents"] += 1
-        for question_answer in article["qas"]:
+        for question_answer in transpose_dict(article['qas']):
             self._stats["number of questions"] += 1
+            # print(type(question_answer))
             self._stats["number of answers"] += len(question_answer["answers"])
             if len(question_answer["answers"]) > 1:
                 self._stats["questions with multiple answers"] += 1
@@ -186,7 +197,9 @@ class QasperReader(DatasetReader):
             all_answers = []
             all_evidence = []
             all_evidence_masks = []
-            for answer_annotation in question_answer["answers"]:
+            # print('198>', question_answer["answers"])
+            for answer_annotation in transpose_dict(question_answer["answers"]):
+                # print('199>', answer_annotation)
                 answer, evidence, answer_type = self._extract_answer_and_evidence(
                     answer_annotation["answer"]
                 )
@@ -235,7 +248,7 @@ class QasperReader(DatasetReader):
                 evidence_mask.append(0)
         return evidence_mask
 
-    @overrides
+    # @overrides
     def text_to_instance(
         self,  # type: ignore  # pylint: disable=arguments-differ
         question: str,
@@ -246,7 +259,7 @@ class QasperReader(DatasetReader):
         answer: str = None,
         evidence: List[str] = None,
         additional_metadata: Dict[str, Any] = None,
-    ) -> Instance:
+    ) -> Any:
         fields = {}
 
         tokenized_question = self._tokenizer.tokenize(question)
@@ -267,7 +280,7 @@ class QasperReader(DatasetReader):
         allowed_context_length = (
                 self.max_document_length
                 - len(tokenized_question)
-                - len(self._tokenizer.sequence_pair_start_tokens)
+                - len(self._sequence_pair_start_tokens)
                 - 1  # for paragraph seperator
         )
         if len(tokenized_context) > allowed_context_length:
@@ -281,26 +294,34 @@ class QasperReader(DatasetReader):
 
         # This is what Iz's code does.
         question_and_context = (
-            self._tokenizer.sequence_pair_start_tokens
+            self._sequence_pair_start_tokens
             + tokenized_question
-            + [Token(self._paragraph_separator)]
+            # + [Token(self._paragraph_separator)]
+            + [self._paragraph_separator,]
             + tokenized_context
         )
+
         # make the question field
-        question_field = TextField(question_and_context)
+        # question_field = TextField(question_and_context)
+        question_field = question_and_context
         fields["question_with_context"] = question_field
 
+        s_question_and_context = ' '.join([question,] + paragraphs)
+        fields['s_question_with_context'] = s_question_and_context
+
         start_of_context = (
-            len(self._tokenizer.sequence_pair_start_tokens)
+            len(self._sequence_pair_start_tokens)
             + len(tokenized_question)
         )
 
         paragraph_indices_list = [x + start_of_context for x in paragraph_start_indices]
 
-        paragraph_indices_field = ListField(
-            [IndexField(x, question_field) for x in paragraph_indices_list] if paragraph_indices_list else
-            [IndexField(-1, question_field)]
-        )
+        # https://github.com/allenai/allennlp/tree/80fb6061e568cb9d6ab5d45b661e86eb61b92c82/allennlp/data/fields
+        # paragraph_indices_field = ListField(
+        #     [IndexField(x, question_field) for x in paragraph_indices_list] if paragraph_indices_list else
+        #     [IndexField(-1, question_field)]
+        # )
+        paragraph_indices_field = paragraph_indices_list or [-1]
 
         fields["paragraph_indices"] = paragraph_indices_field
 
@@ -311,16 +332,19 @@ class QasperReader(DatasetReader):
             mask = [
                 True if i in mask_indices else False for i in range(len(question_field))
             ]
-            fields["global_attention_mask"] = TensorField(torch.tensor(mask))
+            # fields["global_attention_mask"] = TensorField(torch.tensor(mask))
+            fields["global_attention_mask"] = torch.tensor(mask)
 
         if evidence_mask is not None:
-            evidence_field = TensorField(torch.tensor(evidence_mask))
-            fields["evidence"] = evidence_field
+            # evidence_field = TensorField(torch.tensor(evidence_mask))
+            # fields["evidence"] = evidence_field
+            fields["evidence"] = torch.tensor(evidence_mask)
 
         if answer:
-            fields["answer"] = TextField(
-                self._tokenizer.add_special_tokens(self._tokenizer.tokenize(answer))
-            )
+            # fields["answer"] = TextField(
+            #     self._tokenizer.add_special_tokens(self._tokenizer.tokenize(answer))
+            # )
+            fields["answer"] = answer # self._tokenizer.tokenize(answer)
 
         # make the metadata
         metadata = {
@@ -331,13 +355,16 @@ class QasperReader(DatasetReader):
         }
         if additional_metadata is not None:
             metadata.update(additional_metadata)
-        fields["metadata"] = MetadataField(metadata)
-        return Instance(fields)
+        # fields["metadata"] = MetadataField(metadata)
+        fields['metadata'] = metadata
 
-    @overrides
-    def apply_token_indexers(self, instance: Instance) -> None:
-        instance.fields["question_with_context"].token_indexers = self._token_indexers
-        instance.fields["answer"].token_indexers = self._token_indexers
+        # return Instance(fields)
+        return fields
+
+    # @overrides
+    # def apply_token_indexers(self, instance) -> None:
+    #     instance.fields["question_with_context"].token_indexers = self._token_indexers
+    #     instance.fields["answer"].token_indexers = self._token_indexers
 
     def _tokenize_paragraphs(
         self, paragraphs: List[str]
@@ -349,14 +376,15 @@ class QasperReader(DatasetReader):
             paragraph_start_indices.append(len(tokenized_context))
             tokenized_context.extend(tokenized_paragraph)
             if self._paragraph_separator:
-                tokenized_context.append(Token(self._paragraph_separator))
+                # tokenized_context.append(Token(self._paragraph_separator))
+                tokenized_context.append(self._paragraph_separator)
         if self._paragraph_separator:
             # We added the separator after every paragraph, so we remove it after the last one.
             tokenized_context = tokenized_context[:-1]
         return tokenized_context, paragraph_start_indices
 
     def _extract_answer_and_evidence(
-        self, answer: List[JsonDict]
+        self, answer: List[Dict]
     ) -> Tuple[str, List[str]]:
         evidence_spans = [x.replace("\n", " ").strip() for x in answer["evidence"]]
         evidence_spans = [x for x in evidence_spans if x != ""]
@@ -395,14 +423,14 @@ class QasperReader(DatasetReader):
 
         return answer_string, evidence_spans, answer_type
 
-    def _get_paragraphs_from_article(self, article: JsonDict) -> List[str]:
+    def _get_paragraphs_from_article(self, article: Dict) -> List[str]:
         if self._context == "question_only":
             return []
         if self._context == "question_and_abstract":
             return [article["abstract"]]
         full_text = article["full_text"]
         paragraphs = []
-        for section_info in full_text:
+        for section_info in transpose_dict(full_text):
             # TODO (pradeep): It is possible there are other discrepancies between plain text, LaTeX and HTML.
             # Do a thorough investigation and add tests.
             if section_info["section_name"] is not None:

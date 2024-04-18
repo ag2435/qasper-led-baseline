@@ -2,7 +2,7 @@
 from allennlp.common.util import ensure_list
 from allennlp.data import Vocabulary
 
-from qasper_baselines.dataset_reader import QasperReader
+from qasper.dataset_reader import QasperReader
 
 
 class TestQasperReader:

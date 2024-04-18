@@ -1,3 +1,20 @@
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     custom_cell_magics: kql
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.11.2
+#   kernelspec:
+#     display_name: arxiv-agent
+#     language: python
+#     name: python3
+# ---
+
+# %%
 import argparse
 import sys
 import os
@@ -6,34 +23,40 @@ from tqdm import tqdm
 import torch
 # from allennlp.models.archival import load_archive
 
+# %%
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from datasets import load_dataset
 
-from arxiv_agent.baselines import gpt35
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# %%
+from qasper import dataset_reader
 
-from qasper_baselines import dataset_reader
-
+# %%
 parser = argparse.ArgumentParser()
 parser.add_argument('--model', '-m', default='gpt35', type=str,
                     help='name of method to run', choices=['qasper', 'gpt35'])
 parser.add_argument('--data', type=str)
 parser.add_argument('--samples', type=int, default=100)
-parser.add_argument('--output', type=str)
+parser.add_argument('--output', default='output.txt', type=str)
 parser.add_argument('--cpu', action='store_true')
 
+# %%
 qasper_led = AutoModelForSeq2SeqLM.from_pretrained("allenai/led-base-16384")
-if not torch.cuda.is_available():
+if torch.cuda.is_available():
     qasper_led.cuda()
 tokenizer = AutoTokenizer.from_pretrained('allenai/led-base-16384')
 
+# %%
+dataset = load_dataset("allenai/qasper")
+
+
+# %%
 def main(args):
     # archive = load_archive(args.model)
     # qasper_led = archive.model.transformer
     model_predict = get_model(args.model)
 
-    reader = dataset_reader.QasperReader(for_training=False)
+    # reader = dataset_reader.QasperReader(for_training=False)
     dataset = load_dataset("allenai/qasper")
 
     # dataset = json.load(open(args.data))
@@ -79,10 +102,12 @@ def main(args):
             except:
                 print(f"Skipping {question_id}")
 
-# 
+# %% [markdown]
+#
 # Models
-# 
+#
 
+# %%
 def get_model(name):
     if name == "qasper":
         def predict(query):
@@ -108,14 +133,14 @@ def get_model(name):
         return predict
     
     elif name == 'gpt35':
-        def predict(query):
-            return gpt35(query)
-        
+        from arxiv_agent.baselines.zero_shot import predict
+
         return predict
 
     else:
         raise ValueError(f"Unknown model {name}")
 
+# %%
 if __name__ == "__main__":
     args = parser.parse_args()
 
