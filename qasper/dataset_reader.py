@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Iterable, Tuple
 
 # from overrides import overrides
 
-from spacy.tokens import Token
+# from spacy.tokens import Token
 import torch
 
 # from allennlp.common.util import JsonDict
@@ -246,7 +246,8 @@ class QasperReader(object):
         self,  # type: ignore  # pylint: disable=arguments-differ
         question: str,
         paragraphs: List[str],
-        tokenized_context: List[Token] = None,
+#         tokenized_context: List[Token] = None,
+        tokenized_context,
         paragraph_start_indices: List[int] = None,
         evidence_mask: List[int] = None,
         answer: str = None,
@@ -361,7 +362,7 @@ class QasperReader(object):
 
     def _tokenize_paragraphs(
         self, paragraphs: List[str]
-    ) -> Tuple[List[Token], List[int]]:
+    ) -> Tuple[List, List[int]]:
         tokenized_context = []
         paragraph_start_indices = []
         for paragraph in paragraphs:
