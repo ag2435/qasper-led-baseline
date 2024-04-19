@@ -62,6 +62,25 @@ def paragraph_f1_score(prediction, ground_truth):
 
 
 def get_answers_and_evidence(articles, text_evidence_only=True):
+    """
+    Get answers and evidence associated with each question
+    in the dataset. Output is a dictionary with question_id 
+    as key and a list of references as value. Each reference is a
+    dictionary with keys "answer", "evidence" and "type". The 
+    "answer" key contains the answer to the question, the
+    "evidence" key contains the evidence supporting the answer 
+    and the "type" key contains the type of the answer
+    (extractive, abstractive, boolean or none)
+
+    Args:
+        articles (List): list of articles in the dataset
+        text_evidence_only (bool): If true, the evaluator will 
+            ignore evidence in figures and tables while reporting evidence f1
+
+    Returns:
+        answers_and_evidence (dict)
+    """
+    
     answers_and_evidence = {}
     for article in articles:
         # print(article)

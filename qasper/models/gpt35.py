@@ -19,6 +19,9 @@ def truncate_string(string: str) -> str:
     """
     Truncate string to max tokens for GPT-3.5-turbo.
     Otherwise, we get a 400 error from OpenAI.
+
+    Ref: 
+    https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
     """
     # encoding = tiktoken.get_encoding(encoding_name)
     tokens = encoding.encode(string)

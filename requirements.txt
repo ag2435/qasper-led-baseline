@@ -1,2 +1,0 @@
-allennlp==2.2.0
-allennlp_models==2.2.0

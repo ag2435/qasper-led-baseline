@@ -16,9 +16,18 @@ Differences of our implementation over the original implementation:
 ## Setup
 
 ```
-# in a conda environment with torch, transformers, and datasets installed
+# create conda env
+conda env create -f environment.yml
+
 # install the qasper library
 conda develop .
+```
+
+Dependencies:
+```
+pytorch
+transformers
+datasets
 ```
 
 Data: [original data](https://allenai.org/data/qasper)
