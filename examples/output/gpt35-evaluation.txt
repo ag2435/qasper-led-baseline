@@ -1,0 +1,277 @@
+Question ID: b6f15fb6279b82e34a5bf4828b7b5ddabfdf1d54
+Question: which multilingual approaches do they compare with?
+Gold:
+	BIBREF19, BIBREF20
+	multilingual NMT (MNMT) BIBREF19
+Predicted:
+	The document discusses a novel approach for zero-shot translation in Neural Machine Translation (NMT) by leveraging cross-lingual pre-training. The approach aims to address the challenge of translating between low-resource or zero-resource language pairs without direct parallel data. Here is a breakdown of the key points in the document:
+
+1. **Introduction:**
+   - Highlights the limitations of existing methods like pivoting and transfer learning in zero-shot translation scenarios.
+   - Introduces the concept of domain shift problem affecting transfer learning in NMT.
+   - Proposes a transfer approach based on cross-lingual pre-training to improve zero-shot translation performance.
+
+2. **Related Work:**
+   - Discusses pivot-based methods, transfer learning, multilingual NMT, and unsupervised NMT approaches in zero-shot translation.
+   - Compares the advantages and limitations of various methods in addressing the zero-shot translation challenge.
+
+3. **Approach:**
+   - Describes the cross-lingual pre-training based transfer approach in detail.
+   - Introduces Masked Language Modeling (MLM), Translation Language Modeling (TLM), and BRidge Language Modeling (BRLM) for pre-training.
+   - Outlines the transfer protocol involving pre-training a universal encoder and training pivot$\rightarrow $target NMT model for zero-shot translation.
+
+4. **Experiments:**
+   - Provides details on the experimental setup using Europarl and MultiUN datasets for evaluation.
+   - Compares the proposed approach with baselines including pivoting, multilingual NMT, and cross-lingual transfer without pretraining.
+   - Reports results showing the superior performance of the proposed approach in zero-shot translation scenarios.
+
+5. **Analysis:**
+   - Evaluates sentence representations, contextualized word representations, and the effect of freezing parameters in transfer learning.
+   - Discusses the impact of freezing different layers on the performance of the transfer model.
+
+6. **Conclusion:**
+   - Summarizes the contributions of the research in addressing the zero-shot translation challenge through cross-lingual pre-training.
+   - Acknowledges the support received for the research work.
+
+The document provides a comprehensive overview of the proposed approach, its experimental validation, and the implications of using cross-lingual pre-training for enhancing zero-shot translation capabilities in NMT.
+Answer F1:
+	0.01509433962264151
+Precision:
+	0.007662835249042145
+Recall:
+	0.5
+
+Question ID: f5e6f43454332e0521a778db0b769481e23e7682
+Question: what are the pivot-based baselines?
+Gold:
+	pivoting, pivoting$_{\rm m}$
+	firstly translates a source language into the pivot language which is later translated to the target language
+Predicted:
+	The pivot-based baselines in the context of Neural Machine Translation (NMT) refer to the common strategy of using a pivot language to facilitate translation between two low-resource languages that lack direct parallel data. In this approach, the source language is first translated into the pivot language and then further translated into the target language. This method aims to overcome the challenges of poor performance in low-resource language pairs by leveraging the availability of rich-resource languages.
+
+Some common pivot-based methods include:
+
+1. Pivoting: This method involves translating the source language to the pivot language and then translating the pivot language to the target language. It is a sequential translation process that relies on the pivot language as an intermediary step.
+
+2. Pivot-synthetic: This approach involves training a source$\rightarrow $target model using pseudo data generated from source-pivot or pivot-target parallel data. It aims to improve translation performance by utilizing synthetic data for training.
+
+While pivot-based methods can achieve reasonable performance, they often face challenges such as increased computational complexity, parameter scalability with the number of source languages, and error propagation issues resulting from multiple translation steps.
+
+In the realm of NMT, pivot-based methods have been a popular strategy for handling translation tasks involving low-resource language pairs. However, they may not always be the most efficient or effective solution, especially in scenarios where direct parallel data between the source and target languages is not available. Other approaches such as transfer learning, multilingual NMT, and unsupervised NMT have also been explored to address the challenges of translation between low-resource or zero-resource language pairs.
+Answer F1:
+	0.08
+Precision:
+	0.0423728813559322
+Recall:
+	0.7142857142857143
+
+Question ID: 9a05a5f4351db75da371f7ac12eb0b03607c4b87
+Question: which datasets did they experiment with?
+Gold:
+	Europarl, MultiUN
+	Europarl BIBREF31, MultiUN BIBREF32
+Predicted:
+	The experiments conducted in the research paper focused on evaluating the proposed cross-lingual pretraining based transfer approach for zero-shot translation tasks. The datasets used in the experiments were Europarl and MultiUN.
+
+1. **Europarl Dataset:**
+   - The Europarl corpus was utilized for evaluating the zero-shot translation performance in language pairs such as French-English-Spanish (Fr-En-Es), German-English-French (De-En-Fr), and Romanian-English-German (Ro-En-De).
+   - The validation set used was devtest2006, and the test set was test2006 for Fr$\rightarrow $Es and De$\rightarrow $Fr. For Ro$\rightarrow $De, 1,000 overlapping sentences from newstest2016 were used as the test set.
+   - The vocabulary employed was 60K sub-word tokens based on Byte Pair Encoding (BPE).
+
+2. **MultiUN Dataset:**
+   - The MultiUN corpus consisted of English (En) as the pivot language with parallel data available for Arabic (Ar), Spanish (Es), and Russian (Ru).
+   - Six zero-shot translation directions were evaluated, including En $\rightarrow $ Ar, En $\rightarrow $ Es, En $\rightarrow $ Ru, Ar $\rightarrow $ En, Es $\rightarrow $ En, and Ru $\rightarrow $ En.
+   - The vocabulary used was 80K BPE splits.
+
+### Experimental Details:
+- **Model Architecture:** Transformer-big model with specific configurations (e.g., embedding/hidden units, feed-forward filter size, layers, heads per layer) was used for all translation models.
+- **Training Setup:** Adam optimizer was employed with specific learning rate, warm-up steps, dropout rate, and batch size.
+- **Pre-training Methods:** MLM, TLM, and BRLM were pre-trained on monolingual and bilingual data to build a cross-lingual encoder shared by source and pivot languages.
+- **Evaluation Metric:** BLEU score was used as the automatic metric for translation evaluation.
+
+### Results:
+- The proposed approaches consistently outperformed baselines such as pivoting, multilingual NMT, and cross-lingual transfer without pretraining across languages and datasets.
+- The best approach, MLM+BRLM-SA, showed significant improvement in zero-shot translation, surpassing pivoting and achieving better results than traditional transfer methods.
+
+### Conclusion:
+The research demonstrated the effectiveness of the cross-lingual pretraining based transfer approach for zero-shot translation, showcasing improvements in translation performance and highlighting the importance of language invariant representations for successful transfer learning.
+Answer F1:
+	0.013605442176870748
+Precision:
+	0.00684931506849315
+Recall:
+	1.0
+
+Question ID: 5eda469a8a77f028d0c5f1acd296111085614537
+Question: what language pairs are explored?
+Gold:
+	De-En, En-Fr, Fr-En, En-Es, Ro-En, En-De, Ar-En, En-Ru
+	French-English-Spanish (Fr-En-Es), German-English-French (De-En-Fr) and Romanian-English-German (Ro-En-De), Arabic (Ar), Spanish (Es), and Russian (Ru), and mutual translation between themselves constitutes six zero-shot translation
+Predicted:
+	The document discusses the exploration of language pairs in the context of Neural Machine Translation (NMT) research. Key points covered include:
+
+1. **Challenge of Low-Resource Languages**: NMT struggles with low-resource or zero-resource language pairs due to the reliance on large-scale parallel data.
+2. **Pivot-Based Translation**: Translation between low-resource languages often involves pivoting through a rich-resource language, such as translating source language to English and then to the target language.
+3. **Transfer Learning**: Transfer learning is proposed as an alternative to pivoting, leveraging a high-resource pivot→target model to initialize a low-resource source→target model.
+4. **Domain Shift Problem**: The domain shift problem affects zero-shot translation in transfer learning due to discrepancies in feature distributions between languages.
+5. **Proposed Approach**: The document introduces a transfer approach using cross-lingual pre-training to address zero-shot translation challenges.
+6. **Pre-training Methods**: Detailed discussion on Masked Language Modeling (MLM), Translation Language Modeling (TLM), and BRidge Language Modeling (BRLM) for building a shared encoder for different languages.
+7. **Experimental Results**: Evaluation of the proposed cross-lingual pre-training approach against strong baselines on Europarl and MultiUN datasets, showcasing improved zero-shot translation performance.
+8. **Analysis**: Evaluation of sentence representations, contextualized word representations, and the effect of freezing parameters on transfer learning performance.
+9. **Conclusion**: Summary of the proposed approach's effectiveness in achieving language invariant representations for improved zero-shot translation.
+
+The document provides a comprehensive overview of the exploration of language pairs in NMT research, focusing on addressing challenges in translating low-resource or zero-resource languages.
+Answer F1:
+	0.05691056910569106
+Precision:
+	0.03139013452914798
+Recall:
+	0.30434782608695654
+
+Question ID: 18c5d366b1da8447b5404eab71f4cc658ba12e6f
+Question: what ner models were evaluated?
+Gold:
+	Stanford NER, spaCy 2.0 , recurrent model with a CRF top layer
+	Stanford NER, spaCy 2.0, recurrent model with a CRF top layer
+Predicted:
+	The following named entity recognition models were evaluated in the study:
+
+1. Stanford NER: Stanford NER is a conditional random fields (CRF) classifier that uses lexical and contextual features such as the current word, character-level n-grams, previous and next words, word shape, and sequence features.
+
+2. spaCy 2.0: spaCy 2.0 utilizes a CNN-based transition system for named entity recognition. It calculates Bloom embeddings for each token based on its lowercase form, prefix, suffix, and shape, and extracts contextual representations using residual CNNs.
+
+3. Recurrent model with CRF top layer: This model employs bidirectional LSTM cells for character-based feature extraction and CRF for sequence labeling. It uses a rule-based classifier to classify articles based on their Wikidata instance of and subclass of attributes.
+
+These models were trained and evaluated using the generated annotated data and manually annotated gold dataset for the Armenian language. The experiments aimed to compare the performance of these models in recognizing named entities in Armenian texts. The results showed that deep learning models outperformed the feature-based Stanford recognizer in recall, with the recurrent model achieving the highest F1 score.
+
+The study also highlighted the importance of the gold-standard test corpus for evaluating future named entity recognition models in Armenian and provided insights into potential areas for future work, such as further enriching the benchmark test set with additional annotation classes and exploring more efficient methods of utilizing Wikipedia for data generation.
+Answer F1:
+	0.08849557522123894
+Precision:
+	0.046296296296296294
+Recall:
+	1.0
+
+Question ID: b5e4866f0685299f1d7af267bbcc4afe2aab806f
+Question: what is the source of the news sentences?
+Gold:
+	ilur.am
+	links between Wikipedia articles to generate sequences of named-entity annotated tokens
+Predicted:
+	The source of the news sentences is a technical documentation on Named Entity Recognition for the Armenian language. The documentation discusses the challenges of creating annotated corpora for low-resource languages and proposes methods for automatically generating training data for named entity recognition models. It also outlines the process of dataset extraction from Wikipedia, the development of gold-standard test corpus, and the creation of GloVe word embeddings for training deep learning models. The documentation includes details on experiments conducted to compare the performance of popular named entity recognition algorithms on the generated data and the manually annotated test dataset. It also highlights future work in the field of named entity recognition for the Armenian language.
+Answer F1:
+	0.07272727272727274
+Precision:
+	0.04040404040404041
+Recall:
+	0.36363636363636365
+
+Question ID: 1f085b9bb7bfd0d6c8cba1a9d73f08fcf2da7590
+Question: did they use a crowdsourcing platform for manual annotations?
+Gold:
+	No
+	No
+Predicted:
+	Yes, a crowdsourcing platform was not used for manual annotations in this specific project. Instead, an automated approach based on Wikipedia data was employed to generate annotated data for training a named entity recognizer for the Armenian language. The project used an algorithm to extract data from Wikipedia articles and generate sequences of named-entity annotated tokens. The classification algorithm utilized an article's Wikidata entry to determine the corresponding named entity type. The generated data was then manually annotated to create a gold-standard test corpus for evaluating named entity recognition models.
+
+While crowdsourcing platforms are commonly used for manual annotations in various projects, this particular project focused on automated data generation and annotation from Wikipedia sources, which provided a cost-effective alternative to manual annotation for the Armenian language.
+Answer F1:
+	0
+Precision:
+	0
+Recall:
+	0
+
+Question ID: b6ae8e10c6a0d34c834f18f66ab730b670fb528c
+Question: what are the topics pulled from Reddit?
+Gold:
+	politics, business, science, and AskReddit, and 1000 additional posts from the Reddit frontpage. 
+	training data has posts from politics, business, science and other popular topics; the trained model is applied to millions of unannotated posts on all of Reddit
+Predicted:
+	Based on the text provided, the following topics can be pulled from Reddit:
+
+1. Introduction
+2. Dogmatism describes the tendency to lay down opinions as incontrovertibly true
+3. Statistical model of dogmatism
+4. Validation of psychological theories
+5. Four research questions related to dogmatism
+6. Data collection from Reddit
+7. Dogmatism annotations
+8. Approaches to identifying dogmatism
+9. Predicting dogmatism
+10. Dogmatism in the Reddit community
+11. Subreddits with high and low levels of dogmatism
+12. Clustering of dogmatic beliefs
+13. Predictive user behaviors of dogmatism
+14. Impact of dogmatism on conversations
+15. Related work in psychology and linguistic analysis
+16. Conclusion and future implications
+
+These topics cover a range of aspects related to dogmatism analysis on Reddit, including data collection, annotation, feature identification, predictive modeling, community analysis, and behavioral predictors.
+Answer F1:
+	0.1324503311258278
+Precision:
+	0.07936507936507936
+Recall:
+	0.4
+
+Question ID: a87a009c242d57c51fc94fe312af5e02070f898b
+Question: What predictive model do they build?
+Gold:
+	logistic regression models
+	logistic regression models based on unigram bag-of-words features (BOW), sentiment signals (SENT), the linguistic features from our earlier analyses (LING), and combinations of these features.
+Predicted:
+	The predictive model discussed in the documentation is aimed at classifying dogmatic posts from Reddit. It is a statistical model of dogmatism that utilizes linguistic signals to predict the level of dogmatism in a post. The model is trained on a corpus of 5,000 Reddit posts annotated with levels of dogmatism. The model's predictions are guided by various feature sets that align with psychological theories of dogmatism.
+
+The model is used to answer several research questions, such as identifying topics that attract the highest levels of dogmatism, understanding how dogmatic beliefs cluster, exploring the influence of dogmatism on conversations in social media, and examining the relationship between user behaviors and dogmatism.
+
+To build the classifier, linguistic features inspired by psychology are utilized, including certainty, tentativeness, insight, perception, comparison, relativity, pronouns, verb tense, sentiment, interrogative language, and negation. These features are analyzed using techniques like odds ratios and statistical tests to assess their predictive power in identifying dogmatic language.
+
+The classification results show that linguistic features contribute significantly to predicting dogmatism, with the model achieving high accuracy within the Reddit dataset and on a separate dataset of New York Times comments. The model combines linguistic features with other behavioral metrics to create a comprehensive understanding of dogmatism in online conversations.
+
+Overall, the predictive model serves as a valuable tool for analyzing and understanding dogmatic language in online discussions, shedding light on the behaviors and patterns associated with dogmatism in social media interactions.
+Answer F1:
+	0.09876543209876543
+Precision:
+	0.0547945205479452
+Recall:
+	0.5
+
+Question ID: ef4dba073d24042f24886580ae77add5326f2130
+Question: What accuracy does the proposed system achieve?
+Gold:
+	F1 scores of 85.99 on the DL-PS data,  75.15 on the EC-MT data and 71.53 on the EC-UQ data 
+	F1 of 85.99 on the DL-PS dataset (dialog domain); 75.15 on EC-MT and 71.53 on EC-UQ (e-commerce domain)
+Predicted:
+	The proposed system, ALCrowd, achieves significant improvements in Chinese Named Entity Recognition (NER) tasks compared to other systems. Specifically, ALCrowd outperforms strong baseline systems such as CRF and LSTM-CRF, showing an advantage with +1.08 F1 improvement on the DL-PS dataset, +1.24 on EC-MT, and +2.38 on EC-UQ. The results indicate that adding crowd-annotation learning through adversarial training is highly effective in building NER systems.
+
+The system demonstrates its ability to extract worker-independent features, leading to better performance in identifying entities in both dialog and e-commerce domains. The adversarial training approach utilized in ALCrowd provides a mechanism to reduce noise from non-expert annotations and improve the overall accuracy of the NER system.
+
+The impact of pretrained character embeddings on the system's performance is also significant, as models with pretrained embeddings show a marked improvement over those with random embeddings. This highlights the importance of leveraging pretraining techniques to enhance feature representation in NER tasks.
+
+Overall, the results of the study suggest that the proposed system, ALCrowd, offers a promising solution for Chinese NER tasks by effectively leveraging crowd annotations and adversarial training to enhance the accuracy and robustness of the NER system.
+Answer F1:
+	0.12698412698412698
+Precision:
+	0.06976744186046512
+Recall:
+	0.7058823529411765
+
+========================================
+Evaluation metrics:
+{
+    "Answer F1": 0.06850330890624352,
+    "Answer F1 by type": {
+        "extractive": 0.06079980442178291,
+        "abstractive": 0.1297172290549774,
+        "boolean": 0.0,
+        "none": 0.0
+    },
+    "Missing predictions": 0,
+    "Freq of types": {
+        "extractive": 7,
+        "abstractive": 2,
+        "boolean": 1,
+        "none": 0
+    }
+}

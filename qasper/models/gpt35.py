@@ -2,6 +2,8 @@
 LangChain wrapper for GPT-3.5-turbo zero-shot
 """
 
+from typing import Dict
+
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -45,6 +47,6 @@ output_parser = StrOutputParser()
 
 chain = prompt | gpt35 | output_parser
 
-def predict(instance: str):
+def predict(instance: Dict) -> str:
     query = instance['s_question_with_context']
     return chain.invoke({"input": truncate_string(query)})
